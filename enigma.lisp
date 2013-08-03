@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-03 16:30:01 tkych
+;;;; Last modified : 2013-08-03 20:34:27 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -51,13 +51,28 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 ;; Main
 ;;--------------------------------------------------------------------
 
-(defparameter *alphabet* "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+(defparameter *alphabet* "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  "The alphabet string used in a plaintext and a cyphertext.
+Default is \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\".")
 
 (defgeneric machine    (reflector
                         left-rotor middle-rotor right-rotor
                         plugs
-                        input-string))
-(defgeneric set-rotor  (rotor init-position))
+                        input-string)
+  (:documentation
+   "Encode/Decode INPUT-STRING.
+ * REFLECTOR is a one of reflectors (built-in reflector A,B,C, or user defined reflector).
+ * LEFT-ROTOR, MIDDLE-ROTOR, RIGHT-ROTOR are a one of rotors
+   (built-in rotor I,II,III,IV,V,VI,VII,VIII,Beta,Gamma or user defined rotor).
+ * PLUGS is a list of a two characters/symbols which interchanges each other.
+   e.g. plugs, ((#\a #\b) (c d)) makes plugboard a <-> b and c <-> d.
+ * INPUT-STRING is a string to be encode/decode by machine."))
+
+(defgeneric set-rotor  (rotor init-position)
+  (:documentation
+   "Set bar-position of the ROTOR to INIT-POSITION.
+INIT-POSITION must be a character (a...z) or an integer (1...26)."))
+
 (defgeneric rotate     (rotor))
 (defgeneric convert    (char-num convertor))
 (defgeneric invert     (char-num invertor))
@@ -93,6 +108,12 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
    (bar-position    :type integer :accessor bar-position    :initarg :bar-position)))
 
 (defun make-rotor (to-alphabet &rest notch-chars)
+  "Make a rotor.
+TO-ALPHABET is a permutation of *alphabet*.
+NOTCH-CHARACTERS are a characters which replesents the position of turnover.
+e.g.
+ (make-rotor \"BACDEFGHIJKLMNOPQRSTUVWXYZ\" #\N #\W) makes rotor which
+interchanges A <-> B and has notchs for #\N and #\W."
   (unless (string-equal (sort (copy-seq to-alphabet) #'< :key #'char-code)
                         (sort (copy-seq *alphabet*) #'< :key #'char-code))
     (error "~S is not a permutation of alphabet ~S."
@@ -153,6 +174,8 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 (defclass reflector (convertor-mixn) ())
 
 (defun make-reflector (to-alphabet)
+  "Make a reflector.
+TO-ALPHABET is a permutation of *alphabet*."
   (make-instance 'reflector
                  :convertor (generate-exchanger *alphabet* to-alphabet)))
 
@@ -196,21 +219,34 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 ;; c.f. http://www.codesandciphers.org.uk/enigma/rotorspec.htm
 
 ;; rotors
-(defparameter I    (make-rotor "EKMFLGDQVZNTOWYHXUSPAIBRCJ" #\Q))
-(defparameter II   (make-rotor "AJDKSIRUXBLHWTMCQGZNPYFVOE" #\E))
-(defparameter III  (make-rotor "BDFHJLCPRTXVZNYEIWGAKMUSQO" #\V))
-(defparameter IV   (make-rotor "ESOVPZJAYQUIRHXLNFTGKDCMWB" #\J))
-(defparameter V    (make-rotor "VZBRGITYUPSDNHLXAWMJQOFECK" #\Z))
-(defparameter VI   (make-rotor "JPGVOUMFYQBENHZRDKASXLICTW" #\Z #\M))
-(defparameter VII  (make-rotor "NZJHGRCXMYSWBOUFAIVLPEKQDT" #\Z #\M))
-(defparameter VIII (make-rotor "FKQHTLXOCBJSPDZRAMEWNIUYGV" #\Z #\M))
-(defparameter Beta  (make-rotor "LEYJVCNIXWPBQMDRTAKZGFUHOS")) ;no-notch
-(defparameter Gamma (make-rotor "FSOKANUERHMBTIYCWLQPZXVGJD")) ;no-notch
+(defparameter I    (make-rotor "EKMFLGDQVZNTOWYHXUSPAIBRCJ" #\Q)
+  "Built-in rotor. I := (make-rotor \"EKMFLGDQVZNTOWYHXUSPAIBRCJ\" #\\Q)")
+(defparameter II   (make-rotor "AJDKSIRUXBLHWTMCQGZNPYFVOE" #\E)
+  "Built-in rotor. II := (make-rotor \"AJDKSIRUXBLHWTMCQGZNPYFVOE\" #\\E)")
+(defparameter III  (make-rotor "BDFHJLCPRTXVZNYEIWGAKMUSQO" #\V)
+  "Built-in rotor. III := (make-rotor \"BDFHJLCPRTXVZNYEIWGAKMUSQO\" #\\V)")
+(defparameter IV   (make-rotor "ESOVPZJAYQUIRHXLNFTGKDCMWB" #\J)
+  "Built-in rotor. IV := (make-rotor \"ESOVPZJAYQUIRHXLNFTGKDCMWB\" #\\J)")
+(defparameter V    (make-rotor "VZBRGITYUPSDNHLXAWMJQOFECK" #\Z)
+  "Built-in rotor. V := (make-rotor \"VZBRGITYUPSDNHLXAWMJQOFECK\" #\\Z)")
+(defparameter VI   (make-rotor "JPGVOUMFYQBENHZRDKASXLICTW" #\Z #\M)
+  "Built-in rotor. VI := (make-rotor \"JPGVOUMFYQBENHZRDKASXLICTW\" #\\Z #\\M)")
+(defparameter VII  (make-rotor "NZJHGRCXMYSWBOUFAIVLPEKQDT" #\Z #\M)
+  "Built-in rotor. VII := (make-rotor \"NZJHGRCXMYSWBOUFAIVLPEKQDT\" #\\Z #\\M)")
+(defparameter VIII (make-rotor "FKQHTLXOCBJSPDZRAMEWNIUYGV" #\Z #\M)
+  "Built-in rotor. VIII := (make-rotor \"FKQHTLXOCBJSPDZRAMEWNIUYGV\" #\\Z #\\M)")
+(defparameter Beta  (make-rotor "LEYJVCNIXWPBQMDRTAKZGFUHOS") ;no-notch
+  "Built-in rotor. Beta := (make-rotor \"LEYJVCNIXWPBQMDRTAKZGFUHOS\")")
+(defparameter Gamma (make-rotor "FSOKANUERHMBTIYCWLQPZXVGJD") ;no-notch
+  "Built-in rotor. Gamma := (make-rotor \"FSOKANUERHMBTIYCWLQPZXVGJD\")")
 
 ;; reflectors
-(defparameter A (make-reflector "EJMZALYXVBWFCRQUONTSPIKHGD"))
-(defparameter B (make-reflector "YRUHQSLDPXNGOKMIEBFZCWVJAT"))
-(defparameter C (make-reflector "FVPJIAOYEDRZXWGCTKUQSBNMHL"))
+(defparameter A (make-reflector "EJMZALYXVBWFCRQUONTSPIKHGD")
+  "Built-in reflector. A := (make-reflector \"EJMZALYXVBWFCRQUONTSPIKHGD\")")
+(defparameter B (make-reflector "YRUHQSLDPXNGOKMIEBFZCWVJAT")
+  "B := (make-reflector \"YRUHQSLDPXNGOKMIEBFZCWVJAT\")")
+(defparameter C (make-reflector "FVPJIAOYEDRZXWGCTKUQSBNMHL")
+  "C := (make-reflector \"FVPJIAOYEDRZXWGCTKUQSBNMHL\")")
 
 
 ;;--------------------------------------

@@ -1,4 +1,4 @@
-Last modified : 2013-08-03 16:06:50 tkych
+Last modified : 2013-08-03 20:33:15 tkych
 
 Version: 0.1.00 (beta)
 
@@ -85,7 +85,7 @@ e.g. _plugs_, `((#\a #\b) (c d))` makes plugboard a <-> b and c <-> d.
 
 #### [Function] SET-ROTOR _rotor_ _init-position_ => _rotor_
 
-Set  position of the _rotor_ to _init-position_.
+Set bar-position of the _rotor_ to _init-position_.
 _init-position_ must be a character (a...z) or an integer (1...26).
 
 
@@ -93,12 +93,19 @@ _init-position_ must be a character (a...z) or an integer (1...26).
 
 Make a rotor.
 
-_to-alphabet_ is permutation of \*ALPHABET\*.
-_notch-characters_ are characters which replesents the position of turnover.
+_to-alphabet_ is a permutation of \*ALPHABET\*.
+_notch-characters_ are a characters which replesents the position of turnover.
 
 e.g.
 `(make-rotor "BACDEFGHIJKLMNOPQRSTUVWXYZ" #\N #\W)`
 makes rotor which interchanges `A <-> B` and has notchs for `#\N` and `#\W`.
+
+
+#### [Function] MAKE-REFLECTOR _to-alphabet_ => _reflector_
+
+Make a reflector.
+
+_to-alphabet_ is a permutation of \*ALPHABET\*.
 
 
 #### [Special Variables] I, II, III, IV, V, VII, VIII, Beta, Gamma
@@ -139,7 +146,8 @@ Definitions:
 
 #### [Special Variable] \*ALPHABET\*
 
-String of alphabet, default is `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.
+The alphabet string used in a plaintext and a cyphertext.
+Default is `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.
 
 
 TODO
