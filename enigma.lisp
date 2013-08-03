@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-03 20:39:15 tkych
+;;;; Last modified : 2013-08-04 00:06:57 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -29,7 +29,7 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
-  (defmacro left-fold (x &body forms)
+  (defmacro -> (x &body forms)
     "Inserts x as the second item in the first forms,
 making a list of it if it is not a list already. If there are more
 formss, inserts the first forms as the second item in second forms, etc.
@@ -42,7 +42,7 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
                  `(,(car first) ,x ,@(cdr first))
                  `(,first ,x))))
           (t
-           `(left-fold (left-fold ,x ,(car forms)) ,@(cdr forms)))))
+           `(-> (-> ,x ,(car forms)) ,@(cdr forms)))))
 
   ) ;end of eval-when
 
@@ -271,7 +271,7 @@ TO-ALPHABET is a permutation of *alphabet*."
                (rotate middle-rotor))
              (rotate right-rotor))
        :collect (char *alphabet*
-                      (left-fold char-num
+                      (-> char-num
                         (convert plugboard)
                         (convert right-rotor)
                         (convert middle-rotor)
