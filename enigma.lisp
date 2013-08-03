@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-03 13:45:39 tkych
+;;;; Last modified : 2013-08-03 14:59:21 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -13,6 +13,7 @@
   (:nicknames #:enigma)
   (:use :cl)
   (:export #:machine
+           #:set-rotor
            #:make-rotor
            #:make-reflector
            #:*alphabet*
@@ -219,9 +220,9 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
        :for char-num := (position char *alphabet* :test #'char-equal)
        :do (progn
              (when (turnover-p middle-rotor)
-                 (rotate left-rotor)
-                 ;; double stepping
-                 (rotate middle-rotor))
+               (rotate left-rotor)
+               ;; double stepping
+               (rotate middle-rotor))
              (when (turnover-p right-rotor)
                (rotate middle-rotor))
              (rotate right-rotor))
