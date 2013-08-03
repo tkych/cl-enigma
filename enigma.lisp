@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-03 16:23:44 tkych
+;;;; Last modified : 2013-08-03 16:30:01 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -95,7 +95,7 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 (defun make-rotor (to-alphabet &rest notch-chars)
   (unless (string-equal (sort (copy-seq to-alphabet) #'< :key #'char-code)
                         (sort (copy-seq *alphabet*) #'< :key #'char-code))
-    (error "~S is not a permutarion of alphabet ~S."
+    (error "~S is not a permutation of alphabet ~S."
            to-alphabet *alphabet*))
   (make-instance 'rotor
                  :notch-positions (mapcar (lambda (notch-char)
