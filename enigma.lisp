@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-03 14:59:21 tkych
+;;;; Last modified : 2013-08-03 16:23:44 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -53,12 +53,10 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 
 (defparameter *alphabet* "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-(defclass convertor-mixn ()
-  ((convertor :type simple-vector :reader convertor :initarg :convertor)))
-
-(defclass invertor-mixn ()
-  ((invertor :type simple-vector :reader invertor :initarg :invertor)))
-
+(defgeneric machine    (reflector
+                        left-rotor middle-rotor right-rotor
+                        plugs
+                        input-string))
 (defgeneric set-rotor  (rotor init-position))
 (defgeneric rotate     (rotor))
 (defgeneric convert    (char-num convertor))
@@ -66,9 +64,15 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 (defgeneric reflect    (char-num reflector))
 (defgeneric turnover-p (rotor))
 
+(defclass convertor-mixn ()
+  ((convertor :type simple-vector :reader convertor :initarg :convertor)))
+
+(defclass invertor-mixn ()
+  ((invertor :type simple-vector :reader invertor :initarg :invertor)))
+
 ;; The form (generate-exchanger "abcdefghijklmnopqrstuvwxyz"
 ;;                              "bacdefghijklmnopqrstuvwxyz")
-;; generates the exchanger, s.t. a->b and b->a .
+;; generates exchange-vector, s.t. a->b and b->a .
 (defun generate-exchanger (from-alphabet to-alphabet)
   (let ((sv (make-array (length *alphabet*) :element-type t)))
     (loop
@@ -84,11 +88,15 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 ;;--------------------------------------
 
 (defclass rotor (convertor-mixn invertor-mixn)
-  ((notch-positions :type list    :reader   notch-positions :initarg :notch-positions)
-   (to-alphabet     :type string  :reader   to-alphabet     :initarg :to-alphabet)
+  ((to-alphabet     :type string  :reader   to-alphabet     :initarg :to-alphabet)
+   (notch-positions :type list    :reader   notch-positions :initarg :notch-positions)
    (bar-position    :type integer :accessor bar-position    :initarg :bar-position)))
 
 (defun make-rotor (to-alphabet &rest notch-chars)
+  (unless (string-equal (sort (copy-seq to-alphabet) #'< :key #'char-code)
+                        (sort (copy-seq *alphabet*) #'< :key #'char-code))
+    (error "~S is not a permutarion of alphabet ~S."
+           to-alphabet *alphabet*))
   (make-instance 'rotor
                  :notch-positions (mapcar (lambda (notch-char)
                                             (position notch-char *alphabet*
@@ -196,8 +204,8 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 (defparameter VI   (make-rotor "JPGVOUMFYQBENHZRDKASXLICTW" #\Z #\M))
 (defparameter VII  (make-rotor "NZJHGRCXMYSWBOUFAIVLPEKQDT" #\Z #\M))
 (defparameter VIII (make-rotor "FKQHTLXOCBJSPDZRAMEWNIUYGV" #\Z #\M))
-(defparameter Beta  (make-rotor "LEYJVCNIXWPBQMDRTAKZGFUHOS"))
-(defparameter Gamma (make-rotor "FSOKANUERHMBTIYCWLQPZXVGJD"))
+(defparameter Beta  (make-rotor "LEYJVCNIXWPBQMDRTAKZGFUHOS")) ;no-notch
+(defparameter Gamma (make-rotor "FSOKANUERHMBTIYCWLQPZXVGJD")) ;no-notch
 
 ;; reflectors
 (defparameter A (make-reflector "EJMZALYXVBWFCRQUONTSPIKHGD"))
@@ -209,10 +217,10 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 ;; Machine
 ;;--------------------------------------
 
-(defun machine (reflector
-                left-rotor middle-rotor right-rotor
-                plugs
-                input-string)
+(defmethod machine ((reflector reflector)
+                    (left-rotor rotor) (middle-rotor rotor) (right-rotor rotor)
+                    plugs
+                    (input-string string))
   (let ((plugboard   (make-plugboard plugs))
         (upper-case? (upper-case-p (char input-string 0))))
     (loop
@@ -271,17 +279,17 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
 ;;                           "mlwicywkxqkroolc")
 ;;                  "aaaaaaaaaaaaaaaa"))
 
-;; (assert (string-equal
+;; (assert (string=
 ;;          (machine
 ;;           B (set-rotor I #\a) (set-rotor II #\a) (set-rotor III #\a) nil
 ;;           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-;;          "BDZGOWCXLTKSBTMCDLPBMUQOFXYHCXTGYJFLINHNXSHIUNTHEORXPQPKOVHCBUBTZSZSOOSTGOTFSODBBZZLXLCYZXIFGWFDZEEQIBMGFJBWZFCKPFMGBXQCIVIBBRNCOCJUV"))
+;;          "bdzgowcxltksbtmcdlpbmuqofxyhcxtgyjflinhnxshiuntheorxpqpkovhcbubtzszsoostgotfsodbbzzlxlcyzxifgwfdzeeqibmgfjbwzfckpfmgbxqcivibbrncocjuv"))
 
-;; (assert (string-equal
+;; (assert (string=
 ;;          (machine
 ;;           B (set-rotor I #\a) (set-rotor II #\a) (set-rotor III #\a) nil
-;;           "BDZGOWCXLTKSBTMCDLPBMUQOFXYHCXTGYJFLINHNXSHIUNTHEORXPQPKOVHCBUBTZSZSOOSTGOTFSODBBZZLXLCYZXIFGWFDZEEQIBMGFJBWZFCKPFMGBXQCIVIBBRNCOCJUV")
-;;          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
+;;           "bdzgowcxltksbtmcdlpbmuqofxyhcxtgyjflinhnxshiuntheorxpqpkovhcbubtzszsoostgotfsodbbzzlxlcyzxifgwfdzeeqibmgfjbwzfckpfmgbxqcivibbrncocjuv")
+;;          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
 
 
 ;;====================================================================
