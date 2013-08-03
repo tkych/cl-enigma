@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-03 20:34:27 tkych
+;;;; Last modified : 2013-08-03 20:39:15 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -55,24 +55,6 @@ c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#cloj
   "The alphabet string used in a plaintext and a cyphertext.
 Default is \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\".")
 
-(defgeneric machine    (reflector
-                        left-rotor middle-rotor right-rotor
-                        plugs
-                        input-string)
-  (:documentation
-   "Encode/Decode INPUT-STRING.
- * REFLECTOR is a one of reflectors (built-in reflector A,B,C, or user defined reflector).
- * LEFT-ROTOR, MIDDLE-ROTOR, RIGHT-ROTOR are a one of rotors
-   (built-in rotor I,II,III,IV,V,VI,VII,VIII,Beta,Gamma or user defined rotor).
- * PLUGS is a list of a two characters/symbols which interchanges each other.
-   e.g. plugs, ((#\a #\b) (c d)) makes plugboard a <-> b and c <-> d.
- * INPUT-STRING is a string to be encode/decode by machine."))
-
-(defgeneric set-rotor  (rotor init-position)
-  (:documentation
-   "Set bar-position of the ROTOR to INIT-POSITION.
-INIT-POSITION must be a character (a...z) or an integer (1...26)."))
-
 (defgeneric rotate     (rotor))
 (defgeneric convert    (char-num convertor))
 (defgeneric invert     (char-num invertor))
@@ -127,6 +109,11 @@ interchanges A <-> B and has notchs for #\N and #\W."
                  :bar-position    0
                  :convertor       (generate-exchanger *alphabet* to-alphabet)
                  :invertor        (generate-exchanger to-alphabet *alphabet*)))
+
+(defgeneric set-rotor  (rotor init-position)
+  (:documentation
+   "Set bar-position of the ROTOR to INIT-POSITION.
+INIT-POSITION must be a character (a...z) or an integer (1...26)."))
 
 (defmethod set-rotor ((r rotor) (c character))
   (setf (bar-position r)
@@ -244,14 +231,27 @@ TO-ALPHABET is a permutation of *alphabet*."
 (defparameter A (make-reflector "EJMZALYXVBWFCRQUONTSPIKHGD")
   "Built-in reflector. A := (make-reflector \"EJMZALYXVBWFCRQUONTSPIKHGD\")")
 (defparameter B (make-reflector "YRUHQSLDPXNGOKMIEBFZCWVJAT")
-  "B := (make-reflector \"YRUHQSLDPXNGOKMIEBFZCWVJAT\")")
+  "Built-in reflector. B := (make-reflector \"YRUHQSLDPXNGOKMIEBFZCWVJAT\")")
 (defparameter C (make-reflector "FVPJIAOYEDRZXWGCTKUQSBNMHL")
-  "C := (make-reflector \"FVPJIAOYEDRZXWGCTKUQSBNMHL\")")
+  "Built-in reflector. C := (make-reflector \"FVPJIAOYEDRZXWGCTKUQSBNMHL\")")
 
 
 ;;--------------------------------------
 ;; Machine
 ;;--------------------------------------
+
+(defgeneric machine (reflector
+                     left-rotor middle-rotor right-rotor
+                     plugs
+                     input-string)
+  (:documentation
+   "Encode/Decode INPUT-STRING.
+ * REFLECTOR is a one of reflectors (built-in reflector A,B,C, or user defined reflector).
+ * LEFT-ROTOR, MIDDLE-ROTOR, RIGHT-ROTOR are a one of rotors
+   (built-in rotor I,II,III,IV,V,VI,VII,VIII,Beta,Gamma or user defined rotor).
+ * PLUGS is a list of a two characters/symbols which interchanges each other.
+   e.g. plugs, ((#\a #\b) (c d)) makes plugboard a <-> b and c <-> d.
+ * INPUT-STRING is a string to be encode/decode by machine."))
 
 (defmethod machine ((reflector reflector)
                     (left-rotor rotor) (middle-rotor rotor) (right-rotor rotor)
