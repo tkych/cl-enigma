@@ -1,4 +1,4 @@
-Last modified : 2013-08-03 20:33:15 tkych
+Last modified : 2013-08-04 10:58:41 tkych
 
 Version: 0.1.00 (beta)
 
@@ -99,13 +99,6 @@ _notch-characters_ are a characters which replesents the position of turnover.
 e.g.
 `(make-rotor "BACDEFGHIJKLMNOPQRSTUVWXYZ" #\N #\W)`
 makes rotor which interchanges `A <-> B` and has notchs for `#\N` and `#\W`.
-
-
-#### [Function] MAKE-REFLECTOR _to-alphabet_ => _reflector_
-
-Make a reflector.
-
-_to-alphabet_ is a permutation of \*ALPHABET\*.
 
 
 #### [Special Variables] I, II, III, IV, V, VII, VIII, Beta, Gamma
