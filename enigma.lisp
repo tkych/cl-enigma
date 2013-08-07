@@ -1,4 +1,4 @@
-;;;; Last modified : 2013-08-04 00:06:57 tkych
+;;;; Last modified : 2013-08-07 21:05:29 tkych
 
 ;; cl-enigma/enigma.lisp
 
@@ -27,24 +27,21 @@
 ;; Util
 ;;--------------------------------------------------------------------
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-
-  (defmacro -> (x &body forms)
-    "Inserts x as the second item in the first forms,
-making a list of it if it is not a list already. If there are more
-formss, inserts the first forms as the second item in second forms, etc.
-c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/-> "
-    (cond ((null forms)
-           x)
-          ((null (cdr forms))
-           (let ((first (car forms)))
-             (if (consp first)
-                 `(,(car first) ,x ,@(cdr first))
-                 `(,first ,x))))
-          (t
-           `(-> (-> ,x ,(car forms)) ,@(cdr forms)))))
-
-  ) ;end of eval-when
+(defmacro -> (x &body forms)
+  "Threads the `x' through the `forms'. Inserts `x' as the
+second item in the first form, making a list of it if it is not a
+list already. If there are more forms, inserts the first form as the
+second item in second form, etc.
+c.f. clojure's `->', http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/->"
+  (cond ((null forms)
+         x)
+        ((null (cdr forms))
+         (let ((first-form (car forms)))
+           (if (consp first-form)
+               `(,(car first-form) ,x ,@(cdr first-form))
+               `(,first-form ,x))))
+        (t
+         `(-> (-> ,x ,(car forms)) ,@(cdr forms)))))
 
 
 ;;--------------------------------------------------------------------
